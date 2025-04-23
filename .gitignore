@@ -14,3 +14,7 @@ error.log
 src/.idea*
 .DS_Store
 .idea*
+py_lorem.egg-info/*
+build/*
+.buildkite/assets/artifacts/result.txt
+.buildkite/assets/artifacts/result2.txt

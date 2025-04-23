@@ -8,4 +8,8 @@ setup(name='py-lorem',
     author_email='nubela@gmail.com',
     license='MIT',
     packages=['loremipsum'],
+    package_data={
+        'loremipsum': ['loremipsum.txt'],
+    },
+    include_package_data=True,
     zip_safe=False)
