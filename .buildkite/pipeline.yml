@@ -12,7 +12,7 @@ steps:
         always_pull: true
         volumes:
           - .:/buildkite-py-lorem-demo
-    command: "python3 ./assets/scripts/lorem_script.py"
+    command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
 
   - label: Generate Paragraph
     key: paragraph
@@ -27,4 +27,4 @@ steps:
         always_pull: true
         volumes:
           - .:/buildkite-py-lorem-demo
-    command: "python3 ./assets/scripts/lorem_script.py"
+    command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
