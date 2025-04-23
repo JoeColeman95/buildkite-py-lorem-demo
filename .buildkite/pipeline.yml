@@ -25,4 +25,6 @@ steps:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
+        volumes:
+          - .:/buildkite-py-lorem-demo
     command: "python3 ./assets/scripts/lorem_script.py"
