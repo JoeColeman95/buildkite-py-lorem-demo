@@ -4,7 +4,82 @@ import os
 import sys
 import importlib.util
 import subprocess
-import loremipsum
+
+def find_repo_root():
+    """Find the repository root directory"""
+    # First check if we're in a Docker container with a specific mount point
+    if os.environ.get("BUILDKITE_PLUGIN_NAME") == "DOCKER":
+        # Use the known mount point from pipeline.yml
+        print("[INFO] Running in Docker container, using configured mount point")
+        return "/buildkite-py-lorem-demo"
+
+    # For local development, find repository markers
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    start_dir = current_dir
+
+    max_levels = 5  # Safety limit to prevent traversal through time and space...
+    levels = 0
+
+    while current_dir != "/" and levels < max_levels:
+        # Check for known directories or files indicate root of the repo
+        if (os.path.exists(os.path.join(current_dir, ".buildkite")) or
+            os.path.basename(current_dir) == "buildkite-py-lorem-demo"):
+            print(f"[INFO] Found repository root at: {current_dir}")
+            return current_dir
+
+        # Go up one directory
+        current_dir = os.path.dirname(current_dir)
+        levels += 1
+
+    # If we couldn't find a repo root, use the working directory
+    #! N.B. May be better to exit with an error, continuing due to time constraints
+
+    print("[WARNING] Could not determine repository root within safe bounds")
+    print(f"[WARNING] Using current working directory: {os.getcwd()}")
+    return os.getcwd()
+
+def is_package_installed():
+    """Check if loremipsum is installed correctly, if not, install from local"""
+    try:
+        # Check if the package is already installed and is working
+        import loremipsum
+        test = loremipsum.sentence()
+        print("[INFO] Py-Lorem package already installed and working correctly")
+        return True
+    except (ImportError, FileNotFoundError) as e:
+        print(f"[INFO] Py-Lorem package not installed or not working correctly: {str(e)}")
+
+        # Install the package from local repository
+        print("[INFO] Installing Py-Lorem package...")
+
+        # Get the repository root first
+        repo_root = find_repo_root()
+        print(f"[INFO] Found repository root at: {repo_root}")
+
+        # Verify the repository structure
+        loremipsum_dir = os.path.join(repo_root, "loremipsum")
+        setup_file = os.path.join(repo_root, "setup.py")
+
+        if not os.path.exists(loremipsum_dir):
+            print(f"[ERROR] loremipsum directory not found at {loremipsum_dir}")
+            sys.exit(1)
+
+        if not os.path.exists(setup_file):
+            print(f"[ERROR] setup.py not found at {setup_file}")
+            sys.exit(1)
+
+        os.chdir(repo_root)
+
+        # Uninstall existing package if present
+        subprocess.call(["pip", "uninstall", "-y", "py-lorem"])
+
+        # Install package from the repository root where setup.py is located
+        subprocess.check_call(["pip", "install", "--target /tmp/py-lorem", "."])
+        print("[INFO] Local Py-Lorem package installed successfully")
+        sys.path.insert(0, "/tmp/py-lorem")
+        print("[INFO] Added /tmp/py-lorem to Python path")
+        return False
 
 def ensure_directory(directory):
     """Create directory if it doesn't exist"""
@@ -120,6 +195,8 @@ def annotate_result(file_path):
 if __name__ == "__main__":
 
     # Ensure pre-requisites are met
+    is_package_installed()
+    import loremipsum
     validate_env_var("LOREMIPSUM_ACTION")
     action = os.environ["LOREMIPSUM_ACTION"].upper()
 

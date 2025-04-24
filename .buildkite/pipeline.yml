@@ -12,7 +12,7 @@ steps:
           - LOREMIPSUM_ACTION=SENTENCE
           - SENTENCE_MAX_CHAR=20
           - ANNOTATE=true
-    command: "cd buildkite-py-lorem-demo; python3 .buildkite/assets/scripts/lorem_ipsum.py"
+    command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
 
   - label: "Generate Paragraph"
     key: paragraph
@@ -27,4 +27,4 @@ steps:
           - LOREMIPSUM_ACTION=PARAGRAPH
           - PARAGRAPH_MAX_CHAR=100
           - ANNOTATE=true
-    command: "cd buildkite-py-lorem-demo; python3 .buildkite/assets/scripts/lorem_ipsum.py"
+    command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
