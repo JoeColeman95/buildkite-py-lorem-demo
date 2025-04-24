@@ -69,11 +69,13 @@ def is_package_installed():
             print(f"[ERROR] setup.py not found at {setup_file}")
             sys.exit(1)
 
+        os.chdir(repo_root)
+
         # Uninstall existing package if present
-        subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "py-lorem"])
+        subprocess.call(["pip", "uninstall", "-y", "py-lorem"])
 
         # Install package from the repository root where setup.py is located
-        subprocess.check_call([sys.executable, "-m", "pip", "install", repo_root])
+        subprocess.check_call(["pip", "install", "--user", "."])
         print("[INFO] Local Py-Lorem package installed successfully")
         return False
 

@@ -6,6 +6,8 @@ steps:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
+        mount-buildkite-agent: true
+        propagate-uid-gid: true
         environment:
           - LOREMIPSUM_ACTION=SENTENCE
           - SENTENCE_MAX_CHAR=20
@@ -19,6 +21,8 @@ steps:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
+        mount-buildkite-agent: true
+        propagate-uid-gid: true
         environment:
           - LOREMIPSUM_ACTION=PARAGRAPH
           - PARAGRAPH_MAX_CHAR=100
