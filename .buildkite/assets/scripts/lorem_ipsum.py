@@ -4,7 +4,6 @@ import os
 import sys
 import importlib.util
 import subprocess
-import tempfile
 
 def find_repo_root():
     """Find the repository root directory"""
@@ -76,13 +75,10 @@ def is_package_installed():
         subprocess.call(["pip", "uninstall", "-y", "py-lorem"])
 
         # Install package from the repository root where setup.py is located
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Copy source files to temp directory to avoid MacOS permission issue
-            subprocess.check_call(["cp", "-r", ".", temp_dir])
-
-            # Install from temp directory where we have write permissions
-            subprocess.check_call(["pip", "install", "--user", temp_dir])
+        subprocess.check_call(["pip", "install", "--target /tmp/py-lorem", "."])
         print("[INFO] Local Py-Lorem package installed successfully")
+        sys.path.insert(0, "/tmp/py-lorem")
+        print("[INFO] Added /tmp/py-lorem to Python path")
         return False
 
 def ensure_directory(directory):
