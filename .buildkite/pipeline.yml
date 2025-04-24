@@ -6,11 +6,10 @@ steps:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
-        propagate-uid-gid: true
         environment:
-          LOREMIPSUM_ACTION: SENTENCE
-          SENTENCE_MAX_CHAR: 20
-          ANNOTATE: true
+          - LOREMIPSUM_ACTION=SENTENCE
+          - SENTENCE_MAX_CHAR=20
+          - ANNOTATE=true
     command: "cd buildkite-py-lorem-demo; python3 .buildkite/assets/scripts/lorem_ipsum.py"
 
   - label: "Generate Paragraph"
@@ -20,9 +19,8 @@ steps:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
-        propagate-uid-gid: true
         environment:
-          LOREMIPSUM_ACTION: PARAGRAPH
-          PARAGRAPH_MAX_CHAR: 100
-          ANNOTATE: true
+          - LOREMIPSUM_ACTION=PARAGRAPH
+          - PARAGRAPH_MAX_CHAR=100
+          - ANNOTATE=true
     command: "cd buildkite-py-lorem-demo; python3 .buildkite/assets/scripts/lorem_ipsum.py"
