@@ -69,12 +69,31 @@ def is_package_installed():
             print(f"[ERROR] setup.py not found at {setup_file}")
             sys.exit(1)
 
-        # Uninstall existing package if present
-        subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "py-lorem"])
+        # Create virtual environment
+        import tempfile
+        import venv
 
-        # Install package from the repository root where setup.py is located
-        subprocess.check_call([sys.executable, "-m", "pip", "install", repo_root])
-        print("[INFO] Local Py-Lorem package installed successfully")
+        venv_dir = tempfile.mkdtemp(prefix="py_lorem_venv_")
+        print(f"[INFO] Creating virtual environment in {venv_dir}")
+        venv.create(venv_dir, with_pip=True)
+
+        venv_python = os.path.join(venv_dir, "bin", "python")
+        venv_pip = os.path.join(venv_dir, "bin", "pip")
+
+        # Install the package in the virtual environment
+        print(f"[INFO] Installing package in virtual environment using {venv_pip}")
+        subprocess.check_call([venv_pip, "install", repo_root])
+
+        # Execute the rest of the script with the virtual environment's Python
+        print(f"[INFO] Re-executing script with virtual environment Python: {venv_python}")
+
+        # Pass the venv path as an environment variable
+        os.environ["VIRTUAL_ENV"] = venv_dir
+        os.environ["PATH"] = os.path.join(venv_dir, "bin") + os.pathsep + os.environ["PATH"]
+
+        # Replace the current Python process with the venv Python process
+        os.execl(venv_python, venv_python, *sys.argv)
+
         return False
 
 def ensure_directory(directory):
@@ -175,17 +194,32 @@ def generate_paragraph():
 
 def annotate_result(file_path):
     """Annotate the result in Buildkite if ANNOTATE env var is 'true'"""
-    # If the env var for annotate is not set, default to false
     annotate = os.environ.get("ANNOTATE", "false")
-
     if annotate.lower() == "true":
-        print("[INFO] Running buildkite-agent annotation...")
+        # Get the action for context of the annotation
+        action = os.environ.get("LOREMIPSUM_ACTION", "unknown").lower()
+
+        print(f"[INFO] Running buildkite-agent annotation with context: {action}...")
         try:
-            # Run annotate command
-            cmd = f"buildkite-agent annotate '$(cat {file_path})' --style info"
-            subprocess.run(cmd, shell=True, check=True)
-            print("[INFO] Successfully added annotation")
-        except subprocess.CalledProcessError as e:
+            with open(file_path, 'r') as f:
+                content = f.read()
+
+            # Add a descriptive header based on action type
+            if action == "sentence":
+                formatted_content = f"Sentence Result:\n`{content}`"
+            elif action == "paragraph":
+                formatted_content = f"Paragraph Result:\n`{content}`"
+            else:
+                formatted_content = f"{action.capitalize()} Result:\n{content}"
+
+            subprocess.run(
+                ["buildkite-agent", "annotate", "--style", "success", "--context", action],
+                input=formatted_content,
+                text=True,
+                check=True
+            )
+            print("[INFO] Successfully added annotation with context")
+        except Exception as e:
             print(f"[WARNING] Failed to run annotation command: {e}")
 
 if __name__ == "__main__":

@@ -1,30 +1,45 @@
 ---
 steps:
-  - label: Generate Sentence
+  - label: ":memo: Generate Sentence"
     key: sentence
-    env:
-      LOREMIPSUM_ACTION: SENTENCE
-      SENTENCE_MAX_CHAR: 20
-      ANNOTATE: true
     plugins:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
-        volumes:
-          - .:/buildkite-py-lorem-demo
+        mount-buildkite-agent: true
+        propagate-uid-gid: true
+        environment:
+          - LOREMIPSUM_ACTION=SENTENCE
+          - SENTENCE_MAX_CHAR=20
+          - ANNOTATE=true
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
 
-  - label: Generate Paragraph
+  - label: ":open_book: Generate Paragraph"
     key: paragraph
     depends_on: sentence
-    env:
-      LOREMIPSUM_ACTION: PARAGRAPH
-      PARAGRAPH_MAX_CHAR: 100
-      ANNOTATE: true
     plugins:
       docker#v5.12.0:
         image: python:3.13
         always_pull: true
-        volumes:
-          - .:/buildkite-py-lorem-demo
+        mount-buildkite-agent: true
+        propagate-uid-gid: true
+        environment:
+          - LOREMIPSUM_ACTION=PARAGRAPH
+          - PARAGRAPH_MAX_CHAR=100
+          - ANNOTATE=true
+    artifact_paths: "**/result2.txt"
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
+
+  - label: ":visualtest: Validate Artifact"
+    key: validate_artifact
+    depends_on: paragraph
+    command: "bash .buildkite/assets/scripts/validate_artifact.sh result2.txt"
+
+  - block: ":hammer: Build docker?"
+    key: docker_prompt
+    depends_on: validate_artifact
+
+  - label: ":docker: Build and push dockerfile"
+    key: docker_build
+    depends_on: docker_prompt
+    command: "bash .buildkite/assets/scripts/docker_build_push.sh"
