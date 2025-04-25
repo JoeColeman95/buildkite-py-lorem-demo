@@ -204,15 +204,24 @@ def annotate_result(file_path):
             with open(file_path, 'r') as f:
                 content = f.read()
 
+            # Add a descriptive header based on action type
+            if action == "sentence":
+                formatted_content = f"Sentence Result:\n`{content}`"
+            elif action == "paragraph":
+                formatted_content = f"Paragraph Result:\n`{content}`"
+            else:
+                formatted_content = f"{action.capitalize()} Result:\n{content}"
+
             subprocess.run(
-                ["buildkite-agent", "annotate", "--style", "info", "--context", action],
-                input=content,
+                ["buildkite-agent", "annotate", "--style", "success", "--context", action],
+                input=formatted_content,
                 text=True,
                 check=True
             )
             print("[INFO] Successfully added annotation with context")
         except Exception as e:
             print(f"[WARNING] Failed to run annotation command: {e}")
+
 if __name__ == "__main__":
 
     # Ensure pre-requisites are met
