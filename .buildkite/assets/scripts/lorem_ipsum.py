@@ -69,13 +69,31 @@ def is_package_installed():
             print(f"[ERROR] setup.py not found at {setup_file}")
             sys.exit(1)
 
-        os.chdir(repo_root)
-        # Uninstall existing package if present
-        subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "py-lorem"])
+        # Create virtual environment
+        import tempfile
+        import venv
 
-        # Install package from the repository root where setup.py is located
-        subprocess.check_call([sys.executable, "-m", "pip", "install", repo_root])
-        print("[INFO] Local Py-Lorem package installed successfully")
+        venv_dir = tempfile.mkdtemp(prefix="py_lorem_venv_")
+        print(f"[INFO] Creating virtual environment in {venv_dir}")
+        venv.create(venv_dir, with_pip=True)
+
+        venv_python = os.path.join(venv_dir, "bin", "python")
+        venv_pip = os.path.join(venv_dir, "bin", "pip")
+
+        # Install the package in the virtual environment
+        print(f"[INFO] Installing package in virtual environment using {venv_pip}")
+        subprocess.check_call([venv_pip, "install", repo_root])
+
+        # Execute the rest of the script with the virtual environment's Python
+        print(f"[INFO] Re-executing script with virtual environment Python: {venv_python}")
+
+        # Pass the venv path as an environment variable
+        os.environ["VIRTUAL_ENV"] = venv_dir
+        os.environ["PATH"] = os.path.join(venv_dir, "bin") + os.pathsep + os.environ["PATH"]
+
+        # Replace the current Python process with the venv Python process
+        os.execl(venv_python, venv_python, *sys.argv)
+
         return False
 
 def ensure_directory(directory):
