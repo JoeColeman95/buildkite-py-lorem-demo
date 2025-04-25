@@ -27,5 +27,5 @@ steps:
           - LOREMIPSUM_ACTION=PARAGRAPH
           - PARAGRAPH_MAX_CHAR=100
           - ANNOTATE=true
-    artifact_paths: .buildkite/assets/artifacts/result2.txt"
+    artifact_paths: ".buildkite/assets/artifacts/result2.txt"
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
