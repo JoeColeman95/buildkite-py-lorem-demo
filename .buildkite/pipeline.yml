@@ -33,4 +33,4 @@ steps:
   - label: ":visualtest: Validate Artifact"
     key: validate_artifact
     depends_on: paragraph
-    command: ".buildkite/assets/scripts/validate_artifact.sh result2.txt"
+    command: "bash .buildkite/assets/scripts/validate_artifact.sh result2.txt"
