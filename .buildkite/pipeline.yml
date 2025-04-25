@@ -34,3 +34,12 @@ steps:
     key: validate_artifact
     depends_on: paragraph
     command: "bash .buildkite/assets/scripts/validate_artifact.sh result2.txt"
+
+  - block: ":hammer: Build docker?"
+    key: docker_prompt
+    depends_on: validate_artifact
+
+  - label: ":docker: Build and push dockerfile"
+    key: docker_build
+    depends_on: docker_prompt
+    command: "bash .buildkite/assets/scripts/docker_build_push.sh"

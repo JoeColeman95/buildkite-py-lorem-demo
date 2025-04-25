@@ -20,16 +20,13 @@ buildkite-agent artifact download "**/$FILENAME" . || handle_error "No artifact 
 FOUND_FILES=$(find . -name "$FILENAME")
 
 if [ -z "$FOUND_FILES" ]; then
-  handle_error "Could not find $FILENAME after downloading"
+  handle_error "Could not find $FILENAME after downloading" >&2
 fi
 
-echo "[INFO] Artifact content:"
-echo "--------------------------------------"
 for FILE in $FOUND_FILES; do
-  echo "[FILE] $FILE"
+  echo "[INFO] Output for $FILE below:"
   cat "$FILE" || handle_error "Could not read $FILE"
-  echo "--------------------------------------"
 done
 
-echo "[SUCCESS] Artifact '$FILENAME' found and validated"
+echo "[SUCCESS] Artifact '$FILENAME' found and validated" >&2
 exit 0
