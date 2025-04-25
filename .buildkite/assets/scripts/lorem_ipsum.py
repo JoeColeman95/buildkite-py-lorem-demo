@@ -194,19 +194,25 @@ def generate_paragraph():
 
 def annotate_result(file_path):
     """Annotate the result in Buildkite if ANNOTATE env var is 'true'"""
-    # If the env var for annotate is not set, default to false
     annotate = os.environ.get("ANNOTATE", "false")
-
     if annotate.lower() == "true":
-        print("[INFO] Running buildkite-agent annotation...")
-        try:
-            # Run annotate command
-            cmd = f"buildkite-agent annotate '$(cat {file_path})' --style info"
-            subprocess.run(cmd, shell=True, check=True)
-            print("[INFO] Successfully added annotation")
-        except subprocess.CalledProcessError as e:
-            print(f"[WARNING] Failed to run annotation command: {e}")
+        # Get the action for context of the annotation
+        action = os.environ.get("LOREMIPSUM_ACTION", "unknown").lower()
 
+        print(f"[INFO] Running buildkite-agent annotation with context: {action}...")
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+
+            subprocess.run(
+                ["buildkite-agent", "annotate", "--style", "info", "--context", action],
+                input=content,
+                text=True,
+                check=True
+            )
+            print("[INFO] Successfully added annotation with context")
+        except Exception as e:
+            print(f"[WARNING] Failed to run annotation command: {e}")
 if __name__ == "__main__":
 
     # Ensure pre-requisites are met
