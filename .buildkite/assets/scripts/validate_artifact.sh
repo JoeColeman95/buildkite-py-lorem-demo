@@ -28,5 +28,7 @@ for FILE in $FOUND_FILES; do
   cat "$FILE" || handle_error "Could not read $FILE"
 done
 
+echo "" >&2 # Adding empty line to line break from cat output
+
 echo "[SUCCESS] Artifact '$FILENAME' found and validated" >&2
 exit 0
