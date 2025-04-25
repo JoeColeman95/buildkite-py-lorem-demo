@@ -70,15 +70,12 @@ def is_package_installed():
             sys.exit(1)
 
         os.chdir(repo_root)
-
         # Uninstall existing package if present
-        subprocess.call(["pip", "uninstall", "-y", "py-lorem"])
+        subprocess.call([sys.executable, "-m", "pip", "uninstall", "-y", "py-lorem"])
 
         # Install package from the repository root where setup.py is located
-        subprocess.check_call(["pip", "install", "--target /tmp/py-lorem", "."])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", repo_root])
         print("[INFO] Local Py-Lorem package installed successfully")
-        sys.path.insert(0, "/tmp/py-lorem")
-        print("[INFO] Added /tmp/py-lorem to Python path")
         return False
 
 def ensure_directory(directory):
