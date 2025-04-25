@@ -1,6 +1,6 @@
 ---
 steps:
-  - label: "Generate Sentence"
+  - label: ":memo: Generate Sentence"
     key: sentence
     plugins:
       docker#v5.12.0:
@@ -14,7 +14,7 @@ steps:
           - ANNOTATE=true
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
 
-  - label: "Generate Paragraph"
+  - label: ":open_book: Generate Paragraph"
     key: paragraph
     depends_on: sentence
     plugins:
@@ -27,4 +27,5 @@ steps:
           - LOREMIPSUM_ACTION=PARAGRAPH
           - PARAGRAPH_MAX_CHAR=100
           - ANNOTATE=true
+        artifact_paths: "./assets/artifacts/result2.txt"
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
