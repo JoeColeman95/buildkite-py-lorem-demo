@@ -1,10 +1,9 @@
 ---
-docker_python: &docker_python
-  docker#v5.12.0:
-    image: python:3.13
-    always_pull: true
-    mount-buildkite-agent: true
-    propagate-uid-gid: true
+docker_base_config: &docker_base_config
+  image: python:3.13
+  always_pull: true
+  mount-buildkite-agent: true
+  propagate-uid-gid: true
 
 default_timeout: &default_timeout
   timeout_in_minutes: 3
@@ -13,8 +12,8 @@ steps:
   - label: ":memo: Generate Sentence"
     key: sentence
     plugins:
-      <<: *docker_python
       docker#v5.12.0:
+        <<: *docker_base_config
         environment:
           - LOREMIPSUM_ACTION=SENTENCE
           - SENTENCE_MAX_CHAR=20
@@ -26,8 +25,8 @@ steps:
     key: paragraph
     depends_on: sentence
     plugins:
-      <<: *docker_python
       docker#v5.12.0:
+        <<: *docker_base_config
         environment:
           - LOREMIPSUM_ACTION=PARAGRAPH
           - PARAGRAPH_MAX_CHAR=100
