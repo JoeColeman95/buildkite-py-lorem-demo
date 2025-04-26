@@ -1,45 +1,74 @@
 ---
+docker_python: &docker_python
+  docker#v5.12.0:
+    image: python:3.13
+    always_pull: true
+    mount-buildkite-agent: true
+    propagate-uid-gid: true
+
+default_timeout: &default_timeout
+  timeout_in_minutes: 3
+
 steps:
   - label: ":memo: Generate Sentence"
     key: sentence
     plugins:
+      <<: *docker_python
       docker#v5.12.0:
-        image: python:3.13
-        always_pull: true
-        mount-buildkite-agent: true
-        propagate-uid-gid: true
         environment:
           - LOREMIPSUM_ACTION=SENTENCE
           - SENTENCE_MAX_CHAR=20
           - ANNOTATE=true
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
+    <<: *default_timeout
 
   - label: ":open_book: Generate Paragraph"
     key: paragraph
     depends_on: sentence
     plugins:
+      <<: *docker_python
       docker#v5.12.0:
-        image: python:3.13
-        always_pull: true
-        mount-buildkite-agent: true
-        propagate-uid-gid: true
         environment:
           - LOREMIPSUM_ACTION=PARAGRAPH
           - PARAGRAPH_MAX_CHAR=100
           - ANNOTATE=true
     artifact_paths: "**/result2.txt"
     command: "python3 .buildkite/assets/scripts/lorem_ipsum.py"
+    <<: *default_timeout
 
   - label: ":visualtest: Validate Artifact"
     key: validate_artifact
     depends_on: paragraph
     command: "bash .buildkite/assets/scripts/validate_artifact.sh result2.txt"
+    <<: *default_timeout
 
   - block: ":hammer: Build docker?"
-    key: docker_prompt
-    depends_on: validate_artifact
+    prompt: "Do you want to build and push the Docker image?"
+    fields:
+      - select: "Build type"
+        key: "build-type"
+        multiple: false
+        options:
+          - label: ":hammer: Just build"
+            value: "build"
+          - label: ":partyparrot: Build and push"
+            value: "push"
+          - label: ":red_button: Skip"
+            value: "skip"
+      - select: "Version bump"
+        key: "version-bump"
+        multiple: false
+        required: false
+        options:
+          - label: "Major (X.0.0)"
+            value: "major"
+          - label: "Minor (0.X.0)"
+            value: "minor"
+          - label: "Patch (0.0.X)"
+            value: "patch"
 
-  - label: ":docker: Build and push dockerfile"
+  - label: ":docker: Docker Build/Push"
     key: docker_build
     depends_on: docker_prompt
     command: "bash .buildkite/assets/scripts/docker_build_push.sh"
+    timeout_in_minutes: 10
