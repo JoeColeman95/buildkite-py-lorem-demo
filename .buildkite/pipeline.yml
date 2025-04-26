@@ -43,6 +43,7 @@ steps:
 
   - block: ":hammer: Build docker?"
     prompt: "Do you want to build and push the Docker image?"
+    key: docker_prompt
     fields:
       - select: "Build type"
         key: "build-type"
